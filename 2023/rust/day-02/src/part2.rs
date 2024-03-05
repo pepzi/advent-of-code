@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, ops::Not};
+use std::collections::BTreeMap;
 
 use nom::{
     bytes::complete::tag,
@@ -20,33 +20,11 @@ struct Cube<'a> {
 
 #[derive(Debug)]
 struct Game<'a> {
-    id: &'a str,
+    //    id: &'a str,
     rounds: Vec<Vec<Cube<'a>>>,
 }
 
 impl<'a> Game<'a> {
-    fn valid_for_cube_set(
-        &self,
-        map: &BTreeMap<&str, u32>,
-    ) -> Option<u32> {
-        self.rounds
-            .iter()
-            .any(|round| {
-                round.iter().any(|shown_cube| {
-                    shown_cube.amount
-                        > *map
-                            .get(shown_cube.color)
-                            .expect("a valid cube")
-                })
-            })
-            .not()
-            .then_some(
-                self.id.parse::<u32>().expect(
-                    "game id should a parsable u32",
-                ),
-            )
-    }
-
     fn minimum_cube_set(&self) -> u32 {
         let map: BTreeMap<&str, u32> = BTreeMap::new();
         self.rounds
@@ -84,13 +62,12 @@ fn round(input: &str) -> IResult<&str, Vec<Cube>> {
 // Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue;
 // 2 green
 fn game(input: &str) -> IResult<&str, Game> {
-    let (input, id) =
-        preceded(tag("Game "), digit1)(input)?;
+    let (input, _) = preceded(tag("Game "), digit1)(input)?;
     let (input, rounds) = preceded(
         tag(": "),
         separated_list1(tag("; "), round),
     )(input)?;
-    Ok((input, Game { rounds, id }))
+    Ok((input, Game { rounds }))
 }
 fn parse_games(input: &str) -> IResult<&str, Vec<Game>> {
     let (input, games) =
